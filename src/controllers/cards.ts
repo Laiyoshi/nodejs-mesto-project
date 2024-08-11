@@ -6,7 +6,7 @@ const UserError = require("../errors/user-err.ts");
 
 export const getCards = (req: Request, res: Response, next: NextFunction) => {
   return Card.find({})
-    .then((cards) => res.send({ data: cards }))
+    .then((cards) => res.status(201).send({ data: cards }))
     .catch(next);
 };
 
@@ -29,13 +29,17 @@ export const createCard = (
     .catch(next);
 };
 
-export const deleteCard = (req: Request, res: Response) => {
+export const deleteCard = (req: Request, res: Response, next: NextFunction) => {
   return Card.findByIdAndDelete(req.params.cardId)
     .then((card) => res.send({ data: card }))
-    .catch(() => res.status(500).send({ message: "Произошла ошибка" }));
+    .catch(next);
 };
 
-export const likeCard = (req: UserRequest, res: Response) => {
+export const likeCard = (
+  req: UserRequest,
+  res: Response,
+  next: NextFunction
+) => {
   return Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user?._id } },
@@ -47,12 +51,16 @@ export const likeCard = (req: UserRequest, res: Response) => {
           "Переданы некорректные данные при создании карточки"
         );
       }
-      res.send({ data: card });
+      res.status(201).send({ data: card });
     })
-    .catch(() => res.status(500).send({ message: "Произошла ошибка" }));
+    .catch(next);
 };
 
-export const dislikeCard = (req: UserRequest, res: Response) => {
+export const dislikeCard = (
+  req: UserRequest,
+  res: Response,
+  next: NextFunction
+) => {
   return Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user?._id } },
@@ -66,5 +74,5 @@ export const dislikeCard = (req: UserRequest, res: Response) => {
       }
       res.send({ data: card });
     })
-    .catch(() => res.status(500).send({ message: "Произошла ошибка" }));
+    .catch(next);
 };

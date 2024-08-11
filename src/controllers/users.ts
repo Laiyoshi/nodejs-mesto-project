@@ -23,7 +23,7 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
       if (!user) {
         throw new UserError.IncorrectData("Некорректные данные пользователя");
       }
-      res.send({ data: user });
+      res.status(201).send({ data: user });
     })
     .catch(next);
 };
@@ -35,17 +35,24 @@ export const updateUserInfo = (
 ) => {
   const { name, about } = req.body;
   const id = req.user?._id;
-  return User.findByIdAndUpdate(id, { name, about }, { new: true })
+  return User.findByIdAndUpdate(
+    id,
+    { name, about },
+    { new: true, runValidators: true }
+  )
     .then((user) => {
       if (!user?._id) {
         throw new UserError.NotFoundData("Пользователь не найден");
       }
-      if (!user) {
-        throw new UserError.IncorrectData("Переданые некорректные данные");
-      }
       res.send({ data: user });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name == "ValidationError") {
+        next(err);
+      } else {
+        next(err);
+      }
+    });
 };
 
 export const updateUserAvatar = (
