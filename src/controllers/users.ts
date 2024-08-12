@@ -12,7 +12,12 @@ export const getUsers = (req: Request, res: Response, next: NextFunction) => {
 
 export const getUser = (req: Request, res: Response, next: NextFunction) => {
   return User.findById(req.params.userId)
-    .then((user) => res.send({ data: user }))
+    .then((user) => {
+      if (!user) {
+        throw new UserError("Пользователь не найден", 404);
+      }
+      res.send({ data: user });
+    })
     .catch(next);
 };
 
@@ -20,12 +25,15 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
   const { name, about, avatar } = req.body;
   return User.create({ name, about, avatar })
     .then((user) => {
-      if (!user) {
-        throw new UserError.IncorrectData("Некорректные данные пользователя");
-      }
       res.status(201).send({ data: user });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name == "ValidationError") {
+        next(err);
+      } else {
+        next(err);
+      }
+    });
 };
 
 export const updateUserInfo = (
@@ -62,12 +70,19 @@ export const updateUserAvatar = (
 ) => {
   const { avatar } = req.body;
   const id = req.user?._id;
-  return User.findByIdAndUpdate(id, { avatar }, { new: true })
+  return User.findByIdAndUpdate(
+    id,
+    { avatar },
+    { new: true, runValidators: true }
+  )
     .then((avatar) => {
-      if (!avatar) {
-        throw new UserError.IncorrectData("Переданые некорректные данные");
-      }
       res.send({ data: avatar });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name == "ValidationError") {
+        next(err);
+      } else {
+        next(err);
+      }
+    });
 };

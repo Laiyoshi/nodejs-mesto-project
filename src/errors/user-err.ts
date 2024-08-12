@@ -11,14 +11,6 @@ class UserError extends Error implements IError {
     super(message);
     this.statusCode = status;
   }
-
-  IncorrectData(message: string) {
-    return new UserError(message, 400);
-  }
-
-  NotFoundData(message: string) {
-    return new UserError(message, 404);
-  }
 }
 
 module.exports = UserError;
