@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-import-module-exports
 import { Error } from 'mongoose';
 
 export interface IError extends Error {
@@ -13,4 +14,4 @@ class UserError extends Error implements IError {
   }
 }
 
-module.exports = UserError;
+module.exports = { UserError };

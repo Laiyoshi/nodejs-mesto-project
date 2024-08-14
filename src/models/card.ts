@@ -5,8 +5,8 @@ const validator = require('validator');
 interface ICard {
   name: string;
   link: string;
-  owner: mongoose.Schema.Types.ObjectId;
-  likes: [mongoose.Schema.Types.ObjectId];
+  owner: mongoose.Types.ObjectId;
+  likes: Array<mongoose.Types.ObjectId>;
   createdAt: Date;
 }
 
@@ -31,7 +31,7 @@ const cardSchema = new mongoose.Schema<ICard>(
       required: true,
     },
     likes: {
-      type: [mongoose.Schema.Types.ObjectId],
+      type: [mongoose.Types.ObjectId],
       default: [],
     },
     createdAt: {

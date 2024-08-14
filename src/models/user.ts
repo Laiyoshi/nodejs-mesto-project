@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const validator = require('validator');
-const UserError = require('../errors/user-err.ts');
+const UserError = require('../errors/user-err');
 
 interface IUser {
   name: string;
@@ -13,10 +13,9 @@ interface IUser {
 }
 
 interface UserModel extends mongoose.Model<IUser> {
-  findUserByCredentials: (
-    email: string,
-    password: string
-  ) => Promise<mongoose.Document<unknown, any, IUser>>;
+  // eslint-disable-next-line no-unused-vars
+  findUserByCredentials: (email: string, password: string) =>
+  Promise<mongoose.Document<unknown, any, IUser>>;
 }
 
 const userSchema = new mongoose.Schema<IUser, UserModel>(

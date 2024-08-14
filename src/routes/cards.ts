@@ -17,7 +17,7 @@ router.post(
   '/',
   celebrate({
     body: Joi.object({
-      name: Joi.string().min(2).max(30),
+      name: Joi.string().min(2).max(30).required(),
       link: Joi.string().pattern(regExp).required(),
     }),
   }),

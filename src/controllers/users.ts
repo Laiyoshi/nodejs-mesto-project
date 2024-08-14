@@ -5,7 +5,7 @@ import { UserRequest } from '../utils/types';
 import { JWT_KEY } from '../utils/config';
 import User from '../models/user';
 
-const UserError = require('../errors/user-err.ts');
+const UserError = require('../errors/user-err');
 
 export const getUsers = (
   req: Request,
@@ -38,12 +38,19 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
   } = req.body;
   bcrypt
     .hash(password, 10)
-    .then(() => {
+    .then((hash) => {
       User.create({
-        name, email, about, avatar,
+        name, email, password: hash, about, avatar,
       })
         .then((user) => {
-          res.status(201).send({ data: user });
+          res.status(201).send({
+            data: {
+              name: user.name,
+              about: user.about,
+              avatar: user.avatar,
+              email: user.email,
+            },
+          });
         })
         .catch((err) => {
           if (err.code === 11000) {

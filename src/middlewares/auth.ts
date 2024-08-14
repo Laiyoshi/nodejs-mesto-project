@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { JWT_KEY } from '../utils/config';
 
-const UserError = require('../errors/user-err.ts');
+const UserError = require('../errors/user-err');
 
 interface AuthRequest extends Request {
   user?: string | JwtPayload;

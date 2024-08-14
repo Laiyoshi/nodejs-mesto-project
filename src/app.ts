@@ -12,7 +12,7 @@ import { regExp } from './utils/config';
 
 const helmet = require('helmet');
 const { celebrate, Joi } = require('celebrate');
-const UserError = require('./errors/user-err.ts');
+const UserError = require('./errors/user-err');
 
 const { PORT = 3000 } = process.env;
 
@@ -61,13 +61,16 @@ app.use('*', (req: Request, res: Response, next: NextFunction) => {
 app.use(errorLogger);
 app.use(errors());
 
-app.use((err: IError, req: UserRequest, res: Response) => {
+app.use((err: IError, req: UserRequest, res: Response, next: NextFunction) => {
   const { statusCode = 500, message } = err;
   res.status(statusCode).send({
     message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
   });
+
+  next();
 });
 
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log(`App listening on port ${PORT}`);
 });

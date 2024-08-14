@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { UserRequest } from '../utils/types';
 import Card from '../models/card';
 
-const UserError = require('../errors/user-err.ts');
+const UserError = require('../errors/user-err');
 
 export const getCards = (req: Request, res: Response, next: NextFunction) => Card.find({})
   .then((cards) => res.status(200).send({ data: cards }))
