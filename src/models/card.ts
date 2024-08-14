@@ -1,11 +1,12 @@
-import mongoose from "mongoose";
-import { ObjectId } from "mongodb";
+import mongoose from 'mongoose';
+
+const validator = require('validator');
 
 interface ICard {
   name: string;
   link: string;
-  owner: ObjectId;
-  likes: [ObjectId];
+  owner: mongoose.Schema.Types.ObjectId;
+  likes: [mongoose.Schema.Types.ObjectId];
   createdAt: Date;
 }
 
@@ -20,13 +21,17 @@ const cardSchema = new mongoose.Schema<ICard>(
     link: {
       type: String,
       required: true,
+      validate: {
+        validator: (v: string) => validator.isURL(v),
+        message: 'Некорректный URL',
+      },
     },
     owner: {
-      type: ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       required: true,
     },
     likes: {
-      type: [ObjectId],
+      type: [mongoose.Schema.Types.ObjectId],
       default: [],
     },
     createdAt: {
@@ -34,7 +39,7 @@ const cardSchema = new mongoose.Schema<ICard>(
       default: Date.now,
     },
   },
-  { versionKey: false }
+  { versionKey: false },
 );
 
-export default mongoose.model<ICard>("card", cardSchema);
+export default mongoose.model<ICard>('card', cardSchema);

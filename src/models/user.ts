@@ -1,7 +1,8 @@
-import mongoose from "mongoose";
-import bcrypt from "bcryptjs";
-const UserError = require("../errors/user-err.ts");
-let validator = require("validator");
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+
+const validator = require('validator');
+const UserError = require('../errors/user-err.ts');
 
 interface IUser {
   name: string;
@@ -23,7 +24,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel>(
     name: {
       type: String,
       required: false,
-      default: "Жак-Ив Кусто",
+      default: 'Жак-Ив Кусто',
       minlength: [2, 'Минимальная длина поля "name" - 2'],
       maxlength: [30, 'Максимальная длина поля "name" - 30'],
     },
@@ -33,7 +34,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel>(
       unique: true,
       validate: {
         validator: (v: string) => validator.isEmail(v),
-        message: "Некорректный e-mail",
+        message: 'Некорректный e-mail',
       },
     },
     password: {
@@ -44,7 +45,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel>(
     about: {
       type: String,
       required: false,
-      default: "Исследователь",
+      default: 'Исследователь',
       minlength: 2,
       maxlength: 300,
     },
@@ -52,34 +53,34 @@ const userSchema = new mongoose.Schema<IUser, UserModel>(
       type: String,
       required: false,
       default:
-        "https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png",
+        'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
       validate: {
         validator: (v: string) => validator.isURL(v),
-        message: "Некорректный URL",
+        message: 'Некорректный URL',
       },
     },
   },
-  { versionKey: false }
+  { versionKey: false },
 );
 userSchema.static(
-  "findUserByCredentials",
+  'findUserByCredentials',
   function findUserByCredentials(email: string, password: string) {
     return this.findOne({ email })
-      .select("+password")
+      .select('+password')
       .then((user) => {
         if (!user) {
-          throw new UserError("Неверный e-mail или пароль!", 401);
+          throw new UserError('Неверный e-mail или пароль!', 401);
         }
 
         return bcrypt.compare(password, user.password).then((matched) => {
           if (!matched) {
-            throw new UserError("Неверный e-mail или пароль!", 401);
+            throw new UserError('Неверный e-mail или пароль!', 401);
           }
 
           return user;
         });
       });
-  }
+  },
 );
 
-export default mongoose.model<IUser, UserModel>("user", userSchema);
+export default mongoose.model<IUser, UserModel>('user', userSchema);

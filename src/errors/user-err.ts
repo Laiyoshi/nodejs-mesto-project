@@ -1,4 +1,4 @@
-import { Error } from "mongoose";
+import { Error } from 'mongoose';
 
 export interface IError extends Error {
   statusCode?: number;

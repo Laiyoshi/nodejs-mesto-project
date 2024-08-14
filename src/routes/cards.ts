@@ -1,54 +1,54 @@
-import { Router } from "express";
+import { Router } from 'express';
+import { regExp } from '../utils/config';
 import {
   getCards,
   createCard,
   deleteCard,
   likeCard,
   dislikeCard,
-} from "../controllers/cards";
-import { regExp } from "utils/regexp";
+} from '../controllers/cards';
 
-const { celebrate, Joi } = require("celebrate");
+const { celebrate, Joi } = require('celebrate');
 
 const router = Router();
 
-router.get("/", getCards);
+router.get('/', getCards);
 router.post(
-  "/",
+  '/',
   celebrate({
     body: Joi.object({
       name: Joi.string().min(2).max(30),
       link: Joi.string().pattern(regExp).required(),
     }),
   }),
-  createCard
+  createCard,
 );
 router.delete(
-  "/:cardId",
+  '/:cardId',
   celebrate({
     params: Joi.object({
       cardId: Joi.string().length(24).hex().required(),
     }),
   }),
-  deleteCard
+  deleteCard,
 );
 router.put(
-  "/:cardId/likes",
+  '/:cardId/likes',
   celebrate({
     params: Joi.object({
       cardId: Joi.string().length(24).hex().required(),
     }),
   }),
-  likeCard
+  likeCard,
 );
 router.delete(
-  "/:cardId/likes",
+  '/:cardId/likes',
   celebrate({
     params: Joi.object({
       cardId: Joi.string().length(24).hex().required(),
     }),
   }),
-  dislikeCard
+  dislikeCard,
 );
 
 export default router;

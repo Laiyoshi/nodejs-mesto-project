@@ -1,48 +1,48 @@
-import { Router } from "express";
+import { Router } from 'express';
+import { regExp } from '../utils/config';
 import {
   getUsers,
   getUser,
   getUserInfo,
   updateUserInfo,
   updateUserAvatar,
-} from "../controllers/users";
-import { regExp } from "utils/regexp";
+} from '../controllers/users';
 
-const { celebrate, Joi } = require("celebrate");
+const { celebrate, Joi } = require('celebrate');
 
 const router = Router();
 
-router.get("/", getUsers);
-router.get("/me", getUserInfo);
+router.get('/', getUsers);
+router.get('/me', getUserInfo);
 
 router.get(
-  "/:userId",
+  '/:userId',
   celebrate({
     params: Joi.object({
       userId: Joi.string().length(24).hex().required(),
     }),
   }),
-  getUser
+  getUser,
 );
 
 router.patch(
-  "/me",
+  '/me',
   celebrate({
     body: Joi.object({
       name: Joi.string().min(2).max(30).required(),
       about: Joi.string().min(2).max(200).required(),
     }),
   }),
-  updateUserInfo
+  updateUserInfo,
 );
 router.patch(
-  "/me/avatar",
+  '/me/avatar',
   celebrate({
     body: Joi.object({
       avatar: Joi.string().required().pattern(regExp),
     }),
   }),
-  updateUserAvatar
+  updateUserAvatar,
 );
 
 export default router;
