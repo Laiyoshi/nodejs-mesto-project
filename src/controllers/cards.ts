@@ -6,7 +6,7 @@ const UserError = require("../errors/user-err.ts");
 
 export const getCards = (req: Request, res: Response, next: NextFunction) => {
   return Card.find({})
-    .then((cards) => res.status(201).send({ data: cards }))
+    .then((cards) => res.status(200).send({ data: cards }))
     .catch(next);
 };
 
@@ -20,7 +20,7 @@ export const createCard = (
 
   return Card.create({ name, link, owner })
     .then((card) => {
-      res.send({ data: card });
+      res.status(201).send({ data: card });
     })
     .catch((err) => {
       if (err.name == "ValidationError") {
@@ -36,15 +36,29 @@ export const createCard = (
     });
 };
 
-export const deleteCard = (req: Request, res: Response, next: NextFunction) => {
-  return Card.findByIdAndDelete({ _id: req.params.cardId })
-    .then((card) => {
-      if (!card) {
-        throw new UserError("Карточка не найдена", 404);
-      }
-      res.send({ data: card });
-    })
-    .catch(next);
+export const deleteCard = async (
+  req: UserRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { cardId } = req.params;
+    const currentUser = req.user?._id;
+    const currentCard = await Card.findById(cardId);
+
+    if (!currentCard?.id) {
+      throw new UserError("Карточка не найдена", 404);
+    }
+
+    if (currentCard?.owner.toString() !== currentUser) {
+      throw new UserError("Нет прав на удаление текущей карточки", 403);
+    }
+
+    await Card.deleteOne({ _id: currentCard?.id });
+    res.status(200).send({ data: currentCard });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export const likeCard = (
@@ -62,7 +76,9 @@ export const likeCard = (
     })
     .catch((err) => {
       if (err.name == "ValidationError") {
-        next(err);
+        return next(
+          new UserError("Переданы некорректные данные при лайке карточки", 400)
+        );
       } else {
         next(err);
       }
@@ -80,11 +96,16 @@ export const dislikeCard = (
     { new: true }
   )
     .then((card) => {
-      res.send({ data: card });
+      res.status(200).send({ data: card });
     })
     .catch((err) => {
       if (err.name == "ValidationError") {
-        next(err);
+        return next(
+          new UserError(
+            "Переданы некорректные данные при дизлайке карточки",
+            400
+          )
+        );
       } else {
         next(err);
       }

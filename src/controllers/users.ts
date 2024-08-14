@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../models/user";
+import bcrypt from "bcryptjs";
 import { UserRequest } from "utils/types";
-
+import jwt from "jsonwebtoken";
 const UserError = require("../errors/user-err.ts");
 
 export const getUsers = (req: Request, res: Response, next: NextFunction) => {
@@ -22,18 +23,50 @@ export const getUser = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const createUser = (req: Request, res: Response, next: NextFunction) => {
-  const { name, about, avatar } = req.body;
-  return User.create({ name, about, avatar })
-    .then((user) => {
-      res.status(201).send({ data: user });
+  const { name, email, password, about, avatar } = req.body;
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => {
+      User.create({ name, email, password: hash, about, avatar })
+        .then((user) => {
+          res.status(201).send({ data: user });
+        })
+        .catch((err) => {
+          if (err.code === 11000) {
+            next(
+              new UserError("Пользователь с таким email уже существует", 409)
+            );
+          }
+          if (err.name == "ValidationError") {
+            next(
+              new UserError(
+                "Некорректные данные при создании пользователя",
+                400
+              )
+            );
+          } else {
+            next(err);
+          }
+        });
     })
-    .catch((err) => {
-      if (err.name == "ValidationError") {
-        next(err);
-      } else {
-        next(err);
+    .catch(next);
+};
+
+export const getUserInfo = (
+  req: UserRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const id = req.user?._id;
+
+  return User.findById(id)
+    .then((user) => {
+      if (!user) {
+        throw new UserError("Пользователь с таким id не найден", 404);
       }
-    });
+      res.status(200).send({ data: user });
+    })
+    .catch(next);
 };
 
 export const updateUserInfo = (
@@ -42,7 +75,7 @@ export const updateUserInfo = (
   next: NextFunction
 ) => {
   const { name, about } = req.body;
-  const id = req.user?._id;
+  const id = req.user;
   return User.findByIdAndUpdate(
     id,
     { name, about },
@@ -85,4 +118,18 @@ export const updateUserAvatar = (
         next(err);
       }
     });
+};
+
+export const login = (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user.id }, "super-strong-secret", {
+        expiresIn: "7d",
+      });
+
+      res.send({ token });
+    })
+    .catch(next);
 };
