@@ -7,7 +7,7 @@ const UserError = require("../errors/user-err.ts");
 
 export const getUsers = (req: Request, res: Response, next: NextFunction) => {
   return User.find({})
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.status(200).send({ data: users }))
     .catch(next);
 };
 
@@ -17,7 +17,7 @@ export const getUser = (req: Request, res: Response, next: NextFunction) => {
       if (!user) {
         throw new UserError("Пользователь не найден", 404);
       }
-      res.send({ data: user });
+      res.status(200).send({ data: user });
     })
     .catch(next);
 };
@@ -85,11 +85,16 @@ export const updateUserInfo = (
       if (!user?._id) {
         throw new UserError.NotFoundData("Пользователь не найден");
       }
-      res.send({ data: user });
+      res.status(200).send({ data: user });
     })
     .catch((err) => {
       if (err.name == "ValidationError") {
-        next(err);
+        return next(
+          new UserError(
+            "Переданы некорректные данные при изменении пользователя",
+            400
+          )
+        );
       } else {
         next(err);
       }
@@ -109,11 +114,13 @@ export const updateUserAvatar = (
     { new: true, runValidators: true }
   )
     .then((avatar) => {
-      res.send({ data: avatar });
+      res.status(200).send({ data: avatar });
     })
     .catch((err) => {
       if (err.name == "ValidationError") {
-        next(err);
+        return next(
+          new UserError("Переданы некорректные данные при обновлении фото", 400)
+        );
       } else {
         next(err);
       }
