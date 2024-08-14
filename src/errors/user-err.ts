@@ -14,4 +14,4 @@ class UserError extends Error implements IError {
   }
 }
 
-module.exports = { UserError };
+module.exports = UserError;
